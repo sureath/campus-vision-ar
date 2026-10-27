@@ -1,14 +1,56 @@
+# مهم — صورة مبنى ٢
+
+تم استبدال الصورة المرجعية بصورة المبنى التي اخترتها، وهي `assets/target.png`. **التتبع بهذه الصورة لن يعمل حتى يتم إنشاء `assets/targets.mind` منها**. لا يمكن استخدام ملف التتبع القديم الخاص بصورة أخرى.
+
+1. افتح https://hiukim.github.io/mind-ar-js-doc/tools/compile/
+2. ارفع `assets/target.png`، ثم اضغط Start ثم Download.
+3. سمِّ الملف الناتج `targets.mind` وضعه في مجلد `assets/`.
+4. افتح الموقع عبر HTTPS ووجّه الكاميرا نحو صورة `target.png` مطبوعة أو معروضة على شاشة أخرى.
+
+> الصورة تمثيل تجريبي وليست صورة رسمية أو معلومات جامعية موثقة.
+
+---
+
 # Campus Vision AR
 
-نموذج أولي للواقع المعزز باستخدام MindAR وA-Frame لعرض ست معلومات تجريبية حول مبنى ٢.
+نموذج أولي لمسار الذكاء الاصطناعي في Google Developer Groups on Campus – جامعة الطائف، لعرض 4 نوفمبر حول الواقع المعزز والافتراضي. تتعرف كاميرا الجهاز على بطاقة صورة رسمية مؤقتة من أمثلة MindAR، ثم تعرض ست نقاط تفاعلية مثبتة عليها تفتح معلومات عربية عن مبنى جامعي تصوري. **جميع البيانات افتراضية وغير رسمية.**
 
-> البيانات تجريبية وغير رسمية.
+## التقنيات
+- **MindAR 1.2.5**: تعقب ملامح الصورة وتحديد موضعها.
+- **A-Frame 1.6.0**: عرض النقاط داخل مشهد AR.
+- **JavaScript**: تحميل JSON والتعامل مع التتبع والنقر واللوحة.
+- **JSON**: تخزين المباني وأقسام المعلومات بصورة قابلة للتوسعة.
+- **HTML/CSS**: واجهة عربية RTL متجاوبة.
 
-## تشغيل المشروع
-يحتاج المشروع إلى ملفات `index.html` و`style.css` و`app.js` و`data/building.json` و`assets/target.png` و`assets/targets.mind` ومجلد الأيقونات. شغّليه عبر HTTPS باستخدام GitHub Pages أو Live Server محليًا.
+## التشغيل
+1. افتح المجلد في VS Code وشغّل **Live Server** على `index.html` (لا تستخدم `file://`).
+2. افتح الرابط المنشور عبر HTTPS على Chrome Android أو Safari iPhone. اسمح بالكاميرا بعد الضغط على «ابدأ التجربة».
+3. اعرض أو اطبع [بطاقة MindAR الرسمية](https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png) على جهاز آخر. وجّه الكاميرا إليها، ثم اضغط الأيقونات.
+4. على اللابتوب تحتاج كاميرا ومصدرًا مطبوعًا أو شاشة أخرى لعرض الصورة.
 
-## صورة التتبع
-يجب توليد `assets/targets.mind` من `assets/target.png` باستخدام [MindAR Image Targets Compiler](https://hiukim.github.io/mind-ar-js-doc/tools/compile/).
+## الصورة المرجعية واستبدالها
+**مهم:** بسبب عدم توفر تنزيل الملفات الثنائية أثناء إنشاء هذه النسخة، يستخدم `index.html` رابطَي CDN الرسميين مباشرة لبطاقة الاختبار `card.png` وملفها المترجم `card.mind`. لا تتوفر نسختان محليتان فعليتان `assets/target.jpg` و`assets/targets.mind` في هذه الحزمة. يعمل التتبع مع توفر اتصال الإنترنت وخدمة CDN.
 
-## اختبار
-اختبري الكاميرا والتتبع والضغط على الأيقونات في Chrome Android وSafari iOS، مع تغيير الإضاءة والمسافة والزاوية.
+للاستبدال بصورة مبنى: اختر صورة واضحة غنية بالتفاصيل، ثم افتح [Image Targets Compiler](https://hiukim.github.io/mind-ar-js-doc/tools/compile/)، وارفع الصورة وحمّل ملف `.mind`. احفظه في `assets/targets.mind`، واحفظ الصورة نفسها باسم `assets/target.jpg` (JPEG حقيقي). غيّر `imageTargetSrc` في `index.html` إلى `./assets/targets.mind`، ورابط «عرض الصورة المرجعية» إلى `assets/target.jpg`. احرص على أن يطابق ملف `.mind` الصورة المطبوعة، ثم اضبط مواقع النقاط إن تغيرت نسبة الأبعاد.
+
+## تعديل البيانات
+عدّل `data/building.json`؛ كل مبنى داخل مصفوفة `buildings` له `id` و`name` و`sections`. يعرض النموذج حاليًا المبنى الأول فقط. لإضافة مبانٍ أخرى أضف عناصر جديدة إلى المصفوفة، وستحتاج لاحقًا إلى ربط كل مبنى بـ `targetIndex` مناسب وتعديل اختيار المبنى في `app.js`. `isDemo: true` يؤكد طبيعة المحتوى التجريبية.
+
+## قائمة الاختبار
+- [ ] إضاءة قوية ومتوسطة وضعيفة.
+- [ ] مسافات وزوايا مختلفة، مع إظهار الصورة كاملة.
+- [ ] Chrome على Android.
+- [ ] Safari على iPhone.
+- [ ] متصفح لابتوب مع كاميرا.
+- [ ] ظهور النقاط الست، استجابتها للمس/النقر، واختفاؤها عند فقد الهدف.
+- [ ] ظهور الشارة الدائمة، ومراجعة Console والأذونات.
+
+## النشر عبر GitHub Pages
+أنشئ مستودعًا عامًا باسم `campus-vision-ar` وارفع الملفات إلى `main`، ثم Settings → Pages → Build and deployment → Deploy from a branch → `main` / `(root)` → Save. انتظر ظهور رابط HTTPS. يتطلب الوصول للكاميرا سياقًا آمنًا. لا يتطلب المشروع build أو حزم npm.
+
+## المصادر
+- [MindAR – Quick Start](https://hiukim.github.io/mind-ar-js-doc/quick-start/overview/)
+- [MindAR – Image Target Compiler](https://hiukim.github.io/mind-ar-js-doc/tools/compile/)
+- [A-Frame](https://aframe.io/docs/)
+
+> تنويه: هذه تجربة تعليمية فقط، وليست معلومات رسمية صادرة عن الجامعة.
