@@ -2,3 +2,6 @@
 
 /* AR point legend: Arabic labels remain readable in HTML, outside the 3D canvas */
 .ar-legend{position:fixed;z-index:18;bottom:82px;left:50%;transform:translateX(-50%);width:min(95vw,720px);display:flex;flex-wrap:wrap;justify-content:center;gap:7px;pointer-events:none;direction:rtl}.ar-legend span{background:#08223ce8;color:#fff;border:1px solid #9ed7ff80;border-radius:24px;padding:5px 9px;font-size:11px;white-space:nowrap}.ar-legend b{color:#80d2ff;direction:ltr;display:inline-block;margin-left:4px}.sheet:not([hidden])~.ar-legend{display:none}@media(max-width:500px){.ar-legend{bottom:80px;gap:4px}.ar-legend span{font-size:10px;padding:4px 7px}}
+
+/* Clickable information controls independent of image tracking */
+.ar-legend{pointer-events:auto!important}.ar-legend-button{pointer-events:auto;cursor:pointer;background:#08223ce8;color:#fff;border:1px solid #9ed7ff80;border-radius:24px;padding:7px 11px;font:inherit;font-size:12px;white-space:nowrap;touch-action:manipulation}.ar-legend-button b{color:#80d2ff;direction:ltr;display:inline-block;margin-left:4px}.ar-legend-button:hover,.ar-legend-button:focus-visible{background:#17618e;outline:2px solid #9ed7ff}.sheet-backdrop:not([hidden])~.ar-legend{pointer-events:none}@media(max-width:500px){.ar-legend-button{font-size:10px;padding:6px 8px}}
