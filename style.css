@@ -8,3 +8,6 @@
 
 /* Image-anchored UI only: never show a persistent bottom legend */
 .ar-legend{display:none!important}
+
+/* Compact Arabic labels anchored to detected image (no full-size 3D panels) */
+.tracked-hotspots{position:absolute;inset:0;z-index:19;pointer-events:none;overflow:hidden}.tracked-hotspot{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;display:flex;align-items:center;gap:5px;direction:rtl;white-space:nowrap;background:#0a3555e8;border:1px solid #a9dafa;color:#fff;box-shadow:0 3px 10px #001a2b80;border-radius:22px;padding:5px 8px;font:600 11px 'IBM Plex Sans Arabic',sans-serif;cursor:pointer;touch-action:manipulation;max-width:150px}.tracked-hotspot[hidden]{display:none!important}.tracked-hotspot:focus-visible,.tracked-hotspot:hover{outline:2px solid #fff;background:#13699d}.tracked-icon{display:grid;place-items:center;flex:none;width:23px;height:23px;background:#fff;color:#12639a;border-radius:50%;font-family:Arial,sans-serif;font-size:16px;font-weight:bold}.tracked-label{font-size:11px;line-height:1.4}@media(max-width:500px){.tracked-hotspot{padding:4px 6px;gap:3px}.tracked-icon{width:19px;height:19px;font-size:13px}.tracked-label{font-size:9px}}
