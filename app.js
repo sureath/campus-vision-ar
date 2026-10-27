@@ -8,47 +8,57 @@ const scene = $('scene'), anchor = $('anchor');
 function showError(message){$('error').textContent=message;$('error').hidden=false;setTimeout(()=>$('error').hidden=true,6500)}
 function closeSheet(){ $('sheet').hidden=true;$('sheet-backdrop').hidden=true;selected=null; }
 function openSheet(key){const section=building?.sections?.[key];if(!section)return;selected=key;$('sheet-title').textContent=section.title;$('sheet-content').replaceChildren();if(section.text){const p=document.createElement('p');p.textContent=section.text;$('sheet-content').append(p)}if(Array.isArray(section.items)){const ul=document.createElement('ul');section.items.forEach(value=>{const li=document.createElement('li');li.textContent=value;ul.append(li)});$('sheet-content').append(ul)}$('sheet').hidden=false;$('sheet-backdrop').hidden=false;$('close-sheet').focus()}
+// Arabic HTML hotspots are projected from the tracked image's 3D coordinates.
+const hotspotButtons=[];
+let trackingVisible=false;
+let animationStarted=false;
 function createHotspots(){
-  const parent=$('hotspots');
-  const positions=[[-.33,.20],[0,.20],[.33,.20],[-.33,-.20],[0,-.20],[.33,-.20]];
+  const layer=document.createElement('div');
+  layer.id='tracked-hotspots';
+  layer.className='tracked-hotspots';
+  layer.hidden=true;
+  $('experience').append(layer);
+  const symbols=['⌂','✦','▤','▦','◷','⌖'];
   keys.forEach((key,i)=>{
-    const [x,y]=positions[i];
-    const entity=document.createElement('a-entity');
-    entity.setAttribute('position',x+' '+y+' 0.06');
-    entity.setAttribute('data-section',key);
-    const card=document.createElement('a-plane');
-    card.setAttribute('class','tap-target');
-    card.setAttribute('width','.30');
-    card.setAttribute('height','.14');
-    card.setAttribute('material','color: #ffffff; opacity: .96; transparent: true; side: double; depthTest: false');
-    const marker=document.createElement('a-circle');
-    marker.setAttribute('radius','.041');
-    marker.setAttribute('color','#1267a0');
-    marker.setAttribute('position','-.104 0 .006');
-    const digit=document.createElement('a-text');
-    digit.setAttribute('value',String(i+1));
-    digit.setAttribute('align','center');
-    digit.setAttribute('color','#ffffff');
-    digit.setAttribute('width','.24');
-    digit.setAttribute('position','-.104 -.015 .012');
-    const label=document.createElement('a-text');
-    // Arabic text shaping is not reliably supported by A-Frame fonts.
-    // Use a short English label inside the tracked marker; the detail sheet remains Arabic.
-    label.setAttribute('value',['BUILDING','SERVICES','FLOORS','OFFICES','HOURS','NEARBY'][i]);
-    label.setAttribute('align','center');
-    label.setAttribute('color','#103b5b');
-    label.setAttribute('width','.48');
-    label.setAttribute('position','.042 -.015 .012');
-    entity.append(card,marker,digit,label);
-    parent.append(entity);
-    const handler=()=>openSheet(key);
-    card.addEventListener('click',handler);
-    marker.addEventListener('click',handler);
-    label.addEventListener('click',handler);
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='tracked-hotspot';
+    button.innerHTML='<span class="tracked-icon" aria-hidden="true">'+symbols[i]+'</span><span class="tracked-label">'+labels[i]+'</span>';
+    button.setAttribute('aria-label',labels[i]);
+    button.addEventListener('click',()=>openSheet(key));
+    layer.append(button);
+    hotspotButtons.push(button);
   });
+}
+function projectHotspots(){
+  requestAnimationFrame(projectHotspots);
+  if(!trackingVisible || !running || !scene.camera || !anchor.object3D.visible)return;
+  const bounds=$('experience').getBoundingClientRect();
+  if(!bounds.width || !bounds.height)return;
+  const camera=scene.camera;
+  camera.updateMatrixWorld(true);
+  anchor.object3D.updateWorldMatrix(true,false);
+  coords.forEach(([x,y],i)=>{
+    const point=new THREE.Vector3(x,y,0.04);
+    anchor.object3D.localToWorld(point);
+    point.project(camera);
+    const button=hotspotButtons[i];
+    const inFrame=point.z>=-1&&point.z<=1&&Math.abs(point.x)<=1&&Math.abs(point.y)<=1;
+    button.hidden=!inFrame;
+    if(inFrame){
+      button.style.left=((point.x+1)*0.5*bounds.width)+'px';
+      button.style.top=((1-point.y)*0.5*bounds.height)+'px';
+    }
+  });
+}
+function showTrackedHotspots(show){
+  trackingVisible=show;
+  $('tracked-hotspots').hidden=!show;
+  if(show&&!animationStarted){animationStarted=true;requestAnimationFrame(projectHotspots)}
+  if(!show)closeSheet();
 }
 async function loadData(){const response=await fetch('./data/building.json',{cache:'no-store'});if(!response.ok)throw new Error('تعذّر تحميل بيانات المبنى');const json=await response.json();if(json.isDemo!==true||!json.buildings?.[0]?.sections)throw new Error('ملف بيانات التجربة غير صالح');building=json.buildings[0];}
 async function start(){if(running)return;const button=$('start');button.disabled=true;button.textContent='جارٍ تهيئة التجربة…';try{if(!window.isSecureContext && location.hostname!=='localhost' && location.hostname!=='127.0.0.1')throw new Error('يلزم فتح الموقع عبر HTTPS لتشغيل الكاميرا');if(!navigator.mediaDevices?.getUserMedia)throw new Error('هذا المتصفح لا يدعم الوصول إلى الكاميرا');await loadData();$('intro').hidden=true;$('experience').hidden=false;if(!scene.hasLoaded)await new Promise(resolve=>scene.addEventListener('loaded',resolve,{once:true}));await scene.systems['mindar-image-system'].start();running=true;}catch(err){console.error('Campus Vision AR:',err);$('intro').hidden=false;$('experience').hidden=true;showError(err.message||'تعذّر تشغيل الكاميرا. تحقّق من الأذونات وأعد المحاولة.')}finally{button.disabled=false;button.textContent='ابدأ التجربة ←'}}
-async function stop(){closeSheet();if(running){try{await scene.systems['mindar-image-system'].stop()}catch(err){console.warn(err)}}running=false;$('experience').hidden=true;$('intro').hidden=false;$('hint').classList.remove('found')}
-anchor.addEventListener('targetFound',()=>{$('hint').classList.add('found')});anchor.addEventListener('targetLost',()=>{$('hint').classList.remove('found');closeSheet()});
+async function stop(){showTrackedHotspots(false);closeSheet();if(running){try{await scene.systems['mindar-image-system'].stop()}catch(err){console.warn(err)}}running=false;$('experience').hidden=true;$('intro').hidden=false;$('hint').classList.remove('found')}
+anchor.addEventListener('targetFound',()=>{$('hint').classList.add('found');showTrackedHotspots(true)});anchor.addEventListener('targetLost',()=>{$('hint').classList.remove('found');showTrackedHotspots(false)});
 $('start').addEventListener('click',start);$('exit').addEventListener('click',stop);$('close-sheet').addEventListener('click',closeSheet);$('sheet-backdrop').addEventListener('click',closeSheet);document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSheet()});createHotspots();
